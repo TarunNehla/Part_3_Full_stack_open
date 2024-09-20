@@ -63,6 +63,18 @@ app.delete('/api/persons/:id',(request,response)=>{
 
 app.post('/api/persons', (request,response)=>{
     const newp = request.body
+
+    if (!newp.name) {
+        return response.status(404).json({ error: 'name is missing' });
+    } else if (!newp.number) {
+        return response.status(404).json({ error: 'number of person is missing' });
+    }
+    
+    const checkPerson = persons.find(n => n.name === newp.name);
+    if (checkPerson) {
+        return response.status(404).json({ error: 'name already exists, provide another name' });
+    }
+
     const newNote = {
         id : getId(),
         name : newp.name,
