@@ -1,8 +1,9 @@
+require('dotenv').config();
 const express = require('express')
 const app = express()
 const cors = require('cors')
 var morgan = require('morgan')
-
+const Person = require('./models/phonebook')
 app.use(cors())
 app.use(express.json())
 
@@ -48,7 +49,9 @@ app.get('/', (request,response) =>{
 })
 
 app.get('/api/persons', (request,response)=>{
-    response.json(persons)
+    Person.find({}).then(result=>{
+        response.json(result)
+    })
 })
 
 app.get('/info', (request, response) => {
@@ -57,13 +60,9 @@ app.get('/info', (request, response) => {
 
 app.get('/api/persons/:id', (request,response)=>{
     const id = request.params.id
-    const person = persons.find(p => p.id===id)
-    if(person){
-        response.json(person)
-    }
-    else{
-        response.status(404).end()
-    }
+    Person.findById(request.params.id).then(result =>{
+        response.json(result)
+    })
 })
 
 app.delete('/api/persons/:id',(request,response)=>{
@@ -81,19 +80,19 @@ app.post('/api/persons', (request,response)=>{
         return response.status(404).json({ error: 'number of person is missing' });
     }
     
-    const checkPerson = persons.find(n => n.name === newp.name);
-    if (checkPerson) {
-        return response.status(404).json({ error: 'name already exists, provide another name' });
-    }
+    // const checkPerson = persons.find(n => n.name === newp.name);
+    // if (checkPerson) {
+    //     return response.status(404).json({ error: 'name already exists, provide another name' });
+    // }
 
-    const newNote = {
-        id : getId(),
+    const newPerson = new Person({
         name : newp.name,
-        number : newp.number
-    }
-    console.log(newNote)
-    persons = persons.concat(newNote)
-    response.status(201).send(newNote)
+        number : newp.number, 
+    })
+
+    newPerson.save().then(result=>{
+        response.json(result)
+    })
 })
 
 const PORT = 3001;
